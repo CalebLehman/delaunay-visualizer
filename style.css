@@ -1,0 +1,62 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  min-height: 100%;
+  min-width: 100%;
+  background: linear-gradient(
+    70deg,
+    hsl(0deg, 100%, 100%),
+    hsl(300deg, 80%, 90%));
+}
+
+body {
+  font-family: monospace;
+  margin: 0;
+}
+
+#container {
+  width: 100wh;
+  height: 90vh;
+  margin: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 5fr 2fr;
+}
+
+#header {
+  align-self: center;
+}
+
+#drawing {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#canvas {
+  position: absolute;
+  border: 5px solid black;
+  border-radius: 5px;
+
+  background-color: rgb(255, 255, 255);
+}
+
+#content {
+  border-radius: 5px;
+
+  background-color: hsl(300deg, 80%, 85%);
+}
+
+.title {
+  padding: 5px 10px 5px 10px;
+}
+
+.description {
+  margin: 10px;
+}
