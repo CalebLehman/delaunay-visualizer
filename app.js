@@ -1,4 +1,5 @@
 const canvas = document.querySelector("#canvas");
+const radius = 4;
 const triangulation = {
     vertices: [],
     edges:    [],
@@ -10,21 +11,22 @@ const resizeCanvas = () => {
     drawScene(triangulation);
 }
 
-const setup = () => {
-    resizeCanvas();
+const getCanvasPosition = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const styl = window.getComputedStyle(canvas);
+    const border = parseInt(styl.getPropertyValue("border-top-width"), 10);
 
-    // setup listeners
-    window.addEventListener("resize", resizeCanvas);
-    canvas.addEventListener("mouseup", handleClick);
+    const x = event.clientX - (rect.left + border);
+    const y = event.clientY - (rect.top + border);
+    return [x, y];
 }
 
 const drawVertex = (x, y) => {
-    const size = 3;
     const ctx  = canvas.getContext("2d");
 
     ctx.fillStyle = "#000000";
     ctx.beginPath();
-    ctx.rect(x, y, size, size);
+    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
     ctx.stroke();
     ctx.fill();
 }
@@ -44,16 +46,52 @@ const drawScene = (triangulation) => {
     ctx.stroke();
 }
 
-const handleClick = (event) => {
-    const rect = canvas.getBoundingClientRect();
-    const styl = window.getComputedStyle(canvas);
-    const border = parseInt(styl.getPropertyValue("border-top-width"), 10);
+const checkCollision = (p, ps) => {
+    const collision = (p, p_, r) => {
+        return (p[0]-p_[0])*(p[0]-p_[0]) + (p[1]-p_[1])*(p[1]-p_[1]) <= r*r;
+    }
 
-    const x = event.clientX - (rect.left + border);
-    const y = event.clientY - (rect.top + border);
-    triangulation.vertices.push([x, y]);
-    //drawVertex(x, y);
+    for (let i = 0; i < ps.length; ++i) {
+        if (collision(p, ps[i], radius)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+const updateVertex = (i, p) => {
+    triangulation.vertices[i][0] = p[0];
+    triangulation.vertices[i][1] = p[1];
+}
+
+const handleMouseDown = (event) => {
+    const p = getCanvasPosition(event);
+
+    const iCollision = checkCollision(p, triangulation.vertices);
+    if (iCollision > -1) {
+        const updater = e => {
+            const p = getCanvasPosition(e);
+            updateVertex(iCollision, p);
+            drawScene(triangulation);
+        };
+        canvas.addEventListener("mousemove", updater);
+        canvas.addEventListener("mouseup", event => {
+            canvas.removeEventListener("mousemove", updater);
+        },
+        { once: true }
+        );
+    } else {
+        triangulation.vertices.push(p);
+    }
     drawScene(triangulation);
+}
+
+const setup = () => {
+    resizeCanvas();
+
+    // setup listeners
+    window.addEventListener("resize", resizeCanvas);
+    canvas.addEventListener("mousedown", handleMouseDown);
 }
 
 setup();
