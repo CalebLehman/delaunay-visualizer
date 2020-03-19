@@ -16,8 +16,8 @@ const getCanvasPosition = (event) => {
     const styl = window.getComputedStyle(canvas);
     const border = parseInt(styl.getPropertyValue("border-top-width"), 10);
 
-    const x = event.clientX - (rect.left + border);
-    const y = event.clientY - (rect.top + border);
+    const x = Math.round(event.clientX - (rect.left + border));
+    const y = Math.round(event.clientY - (rect.top + border));
     return [x, y];
 }
 
