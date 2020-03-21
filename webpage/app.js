@@ -11,6 +11,10 @@ const state = {
 const triGridDim = 3000;
 
 const resizeCanvas = () => {
+    const minDimension = Math.min(canvas.parentNode.clientWidth, canvas.parentNode.clientHeight);
+    canvas.style.width = minDimension + "px";
+    canvas.style.height = minDimension + "px";
+
     canvas.width  = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
     drawScene(scene.vertices, scene.edges);
@@ -86,8 +90,6 @@ const pointsPOST = vertices => {
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log(xhr.responseText);
-                console.log(JSON.parse(xhr.responseText).E);
                 data = JSON.parse(xhr.responseText)
                 scene.vertices = data.V;
                 scene.edges    = data.E;
