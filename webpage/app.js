@@ -1,15 +1,19 @@
-const canvas = document.querySelector("#canvas");
-const radius = 4;
-const triangulation = {
+const scene = {
     vertices: [],
     edges:    [],
-};
+}
+
+const canvas = document.querySelector("#canvas");
+const radius = 4;
+const state = {
+    vertices: [],
+}
 const triGridDim = 3000;
 
 const resizeCanvas = () => {
     canvas.width  = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    drawScene(triangulation);
+    drawScene(scene.vertices, scene.edges);
 }
 
 const canvasToGrid = p => {
@@ -46,53 +50,53 @@ const drawVertex = p => {
     ctx.fill();
 }
 
-const drawScene = triangulation => {
-    canvas.height = canvas.height;
-    for (vertex of triangulation.vertices) {
+const drawScene = (vertices, edges) => {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = "100px Arial";
+    ctx.fillText(edges.length, 0, 100);
+    for (vertex of vertices) {
         drawVertex(gridToCanvas(vertex));
     }
 
-    if (triangulation.vertices.length > 2) {
-        pointsPOST(triangulation);
-    }
-
-    const ctx = canvas.getContext("2d");
     ctx.beginPath();
-    for (let i = 1; i < triangulation.vertices.length; ++i) {
-        ctx.moveTo(...gridToCanvas(triangulation.vertices[i-1]));
-        ctx.lineTo(...gridToCanvas(triangulation.vertices[i]));
+    for (edge of edges) {
+        ctx.moveTo(...gridToCanvas(vertices[edge[0]]));
+        ctx.lineTo(...gridToCanvas(vertices[edge[1]]));
     }
     ctx.stroke();
 
 }
 
-const pointsPOST = triangulation => {
-    const xhr = new XMLHttpRequest();
-    const url = "upload"
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log("text was:");
-            console.log(xhr.responseText);
-        }
-    };
-    xhr.send(JSON.stringify({"vertices": triangulation.vertices}));
-}
+let unprocessed = false;
+const pointsPOST = vertices => {
+    if (vertices.length < 3) {
+        scene.vertices = [...vertices];
+        scene.edges    = [];
+        drawScene(scene.vertices, scene.edges);
+        return;
+    } else {
+        if (unprocessed) return;
 
-const tempGet = () => {
-    console.log("sending");
-    const xhr = new XMLHttpRequest();
-    const url = "hello"
-    xhr.open("GET", url, true);
-    xhr.onreadystatechange = function () {
-        console.log("recing");
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log("text was:");
-            console.log(xhr.responseText);
-        }
-    };
-    xhr.send();
+        unprocessed = true;
+        const xhr = new XMLHttpRequest();
+        const url = "upload"
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                console.log(JSON.parse(xhr.responseText).E);
+                data = JSON.parse(xhr.responseText)
+                scene.vertices = data.V;
+                scene.edges    = data.E;
+                drawScene(scene.vertices, scene.edges);
+                unprocessed = false;
+            }
+        };
+        xhr.send(JSON.stringify({"V": vertices, "E": []}));
+    }
 }
 
 const checkCollision = (p, ps) => {
@@ -108,37 +112,40 @@ const checkCollision = (p, ps) => {
     return -1;
 }
 
-const updateVertex = (triangulation, i, p) => {
-    triangulation.vertices[i][0] = p[0];
-    triangulation.vertices[i][1] = p[1];
+const updateVertex = (vertices, i, p) => {
+    vertices[i][0] = p[0];
+    vertices[i][1] = p[1];
 }
 
 const handleMouseDown = (event) => {
     const p = getCanvasPosition(event);
 
-    const iCollision = checkCollision(p, triangulation.vertices.map(gridToCanvas));
+    const iCollision = checkCollision(p, state.vertices.map(gridToCanvas));
     if (iCollision > -1) {
         const updater = e => {
             const p = getCanvasPosition(e);
-            updateVertex(triangulation, iCollision, canvasToGrid(p));
-            drawScene(triangulation);
+            updateVertex(state.vertices, iCollision, canvasToGrid(p));
+            //drawScene(state.vertices, scene.edges);
+            pointsPOST(state.vertices);
         };
         canvas.addEventListener("mousemove", updater);
         canvas.addEventListener("mouseup", event => {
+            pointsPOST(state.vertices);
             canvas.removeEventListener("mousemove", updater);
         },
         { once: true }
         );
     } else {
-        triangulation.vertices.push(canvasToGrid(p));
+        state.vertices.push(canvasToGrid(p));
+        pointsPOST(state.vertices);
     }
-    drawScene(triangulation);
 }
 
 const setup = () => {
     resizeCanvas();
 
     // setup listeners
+    resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
     canvas.addEventListener("mousedown", handleMouseDown);
 }
