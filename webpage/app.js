@@ -2,6 +2,7 @@ const scene = {
     vertices: [],
     edges:    [],
 }
+const color = "#FFCC66";
 
 const canvas = document.querySelector("#canvas");
 const radius = 4;
@@ -47,7 +48,6 @@ const getCanvasPosition = (event) => {
 const drawVertex = p => {
     const ctx  = canvas.getContext("2d");
 
-    ctx.fillStyle = "#000000";
     ctx.beginPath();
     ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI, false);
     ctx.stroke();
@@ -58,8 +58,9 @@ const drawScene = (vertices, edges) => {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = "100px Arial";
-    ctx.fillText(edges.length, 0, 100);
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+
     for (vertex of vertices) {
         drawVertex(gridToCanvas(vertex));
     }
@@ -71,6 +72,13 @@ const drawScene = (vertices, edges) => {
     }
     ctx.stroke();
 
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.fillStyle = "#FFFFFF";
+
+    ctx.font = canvas.width / 20 + "px Monospace";
+    const padding = Math.round(canvas.width / 50);
+    ctx.fillText("vertices: " + vertices.length, padding, canvas.height - padding - canvas.width / 20);
+    ctx.fillText("edges: " + edges.length, padding, canvas.height - padding);
 }
 
 let unprocessed = false;

@@ -1,3 +1,9 @@
+:root {
+  --primary-color: hsl(213deg, 25%, 40%);
+  --background-color: hsl(213deg, 25%, 15%);
+  --text-color: hsl(40deg, 100%, 70%);
+}
+
 * {
   padding: 0;
   margin: 0;
@@ -7,10 +13,8 @@
 html {
   min-height: 100%;
   min-width: 100%;
-  background: linear-gradient(
-    70deg,
-    hsl(0deg, 100%, 100%),
-    hsl(300deg, 80%, 90%));
+  background: var(--background-color);
+  color: var(--text-color);
 }
 
 body {
@@ -18,6 +22,7 @@ body {
   height: 100%;
 
   font-family: monospace;
+  font-size: 14pt;
   margin: 0;
 }
 
@@ -63,19 +68,22 @@ body {
   height: 100%;
 
   position: relative;
-  background-color: rgb(255, 255, 255);
+  background-color: var(--primary-color);
 
   border: 5px solid black;
   border-radius: 5px;
 }
 
 #content {
-  height: 100%;
-  width: 100%;
+  padding: 10px;
   border-radius: 5px;
-  background: hsl(300deg, 80%, 85%);
+  background: var(--primary-color);
 
   grid-area: content;
+}
+
+#content p {
+  margin: 15px;
 }
 
 #links {
@@ -87,10 +95,12 @@ body {
 }
 .img-link {
   margin: 20px;
-  opacity: 50%;
+  opacity: 10%;
+  filter: invert(100%);
 }
 .img-link:hover {
   transform: scale(1.1);
+  opacity: 30%;
 }
 
 /* wide layout */
@@ -100,7 +110,7 @@ body {
   width: 100%;
   height: 100%;
 
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 2fr 1fr 2fr 2fr;
   grid-template-rows: 1fr 5fr;
   grid-template-areas:
     "title title title links"
